@@ -1,18 +1,6 @@
 use std::fs;
 use std::error::Error;
 
-const SPELLED_DIGITS: &[(&str, &str)] = &[
-    ("1", "one"),
-    ("2", "two"),
-    ("3", "three"),
-    ("4", "four"),
-    ("5", "five"),
-    ("6", "six"),
-    ("7", "seven"),
-    ("8", "eight"),
-    ("9", "nine"),
-];
-
 fn main() -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string("encoded_calibration_doc.txt")?;
     
@@ -35,36 +23,39 @@ fn decode_substring(s: &str) -> i32 {
 }
 
 fn replace_spelled_digits(s: &str) -> String {
-    let mut result = s.to_string();
+    let mut index = 0;
+    let line_iter = std::iter::from_fn(move || {
+        let reduced_line = &s[index..];
 
-    let matches = get_spelled_matches(s);
-    if matches.len() > 0 {
-        let (_, replacement, digit) = matches[0]; 
-        result = result.replace(digit, replacement);
-    }
+        let result = if reduced_line.starts_with("one") {
+            Some('1')
+        } else if reduced_line.starts_with("two") {
+            Some('2')
+        } else if reduced_line.starts_with("three") {
+            Some('3')
+        } else if reduced_line.starts_with("four") {
+            Some('4')
+        } else if reduced_line.starts_with("five") {
+            Some('5')
+        } else if reduced_line.starts_with("six") {
+            Some('6')
+        } else if reduced_line.starts_with("seven") {
+            Some('7')
+        } else if reduced_line.starts_with("eight") {
+            Some('8')
+        } else if reduced_line.starts_with("nine") {
+            Some('9')
+        } else {
+            let result = reduced_line.chars().next();
+            result
+        };
+        index += 1;
+        result
+    });
+    
+    let out = line_iter.collect();
 
-    let matches = get_spelled_matches(&result);
-    if matches.len() > 0 {
-        let (_, replacement, digit) = matches[matches.len() - 1]; 
-        result = result.replace(digit, replacement);
-    }
-
-    result
-}
-
-fn get_spelled_matches(s: &str) -> Vec<(usize, &str, &str)> {
-    let mut matches: Vec<(usize, &str, &str)> = Vec::new();
-
-    for (replacement, digit) in SPELLED_DIGITS {
-        match s.find(digit) {
-            Some(x) => matches.push((x, replacement, digit)),
-            None => (),
-        }
-    }
-
-    matches.sort_by_key(|k| k.0);
-
-    matches
+    out
 }
 
 fn first_last_numeric(s: String) -> String {
