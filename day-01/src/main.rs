@@ -18,6 +18,7 @@ fn decode_substring(s: &str) -> i32 {
         replace_spelled_digits(&s)
     );
     let result: i32 = decoded.parse().unwrap();
+    println!("{result}");
 
     result
 }
@@ -35,27 +36,25 @@ fn replace_spelled_digits(s: &str) -> String {
         ("9", "nine"),
     ];
 
-
     let mut result = s.to_string();
-    let mut matches: Vec<usize> = Vec::new();
+    let mut matches: Vec<(usize, &str, &str)> = Vec::new();
 
-    for (_, dig) in &spelled_digits {
-        match s.find(dig) {
-            Some(x) => matches.push(x),
+    for (replacement, digit) in &spelled_digits {
+        match s.find(digit) {
+            Some(x) => matches.push((x, replacement, digit)),
             None => (),
         }
     }
 
-    matches.sort();
+    matches.sort_by_key(|k| k.0);
 
-    println!("{:?}", &matches);
-
-    for m in matches {
-        let (idx, dig) = spelled_digits[m];
-        result = result.replace(dig, idx);
+    for (_, replacement, digit) in &matches {
+        result = result.replace(digit, replacement);
     }
 
-    print!("{result}");
+    if matches.len() > 0 {
+        println!("{s} -> {result}");
+    };
 
     result
 }
