@@ -22,38 +22,25 @@ fn decode_substring(s: &str) -> i32 {
     result
 }
 
-struct DigitReplacement {
-    replacement: &str,
-    digit: String,
-}
-
-impl DigitReplacement {
-    fn new(replacement: &str, digit: &str) -> DigitReplacement {
-        DigitReplacement {
-            replacement,
-            digit: digit.to_string(),
-        }
-    }
-}
-
-const replacements: Vec<DigitReplacement> = vec![
-    DigitReplacement::new("1", "one"),
-    DigitReplacement::new("2", "two"),
-    DigitReplacement::new("3", "three"),
-    DigitReplacement::new("4", "four"),
-    DigitReplacement::new("5", "five"),
-    DigitReplacement::new("6", "six"),
-    DigitReplacement::new("7", "seven"),
-    DigitReplacement::new("8", "eight"),
-    DigitReplacement::new("9", "nine"),
-];
-
 fn replace_spelled_digits(s: &str) -> String {
+    let spelled_digits: Vec<(&str, &str)> = vec![
+        ("1", "one"),
+        ("2", "two"),
+        ("3", "three"),
+        ("4", "four"),
+        ("5", "five"),
+        ("6", "six"),
+        ("7", "seven"),
+        ("8", "eight"),
+        ("9", "nine"),
+    ];
+
+
     let mut result = s.to_string();
     let mut matches: Vec<usize> = Vec::new();
 
-    for r in &replacements {
-        match s.find(r.digit) {
+    for (_, dig) in &spelled_digits {
+        match s.find(dig) {
             Some(x) => matches.push(x),
             None => (),
         }
@@ -64,8 +51,8 @@ fn replace_spelled_digits(s: &str) -> String {
     println!("{:?}", &matches);
 
     for m in matches {
-        let r = replacements[m];
-        result = result.replace(r.digit, r.replacement);
+        let (idx, dig) = spelled_digits[m];
+        result = result.replace(dig, idx);
     }
 
     print!("{result}");
