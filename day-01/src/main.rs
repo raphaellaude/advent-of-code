@@ -1,6 +1,18 @@
 use std::fs;
 use std::error::Error;
 
+const SPELLED_DIGITS: &[(&str, &str)] = &[
+    ("1", "one"),
+    ("2", "two"),
+    ("3", "three"),
+    ("4", "four"),
+    ("5", "five"),
+    ("6", "six"),
+    ("7", "seven"),
+    ("8", "eight"),
+    ("9", "nine"),
+];
+
 fn main() -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string("encoded_calibration_doc.txt")?;
     
@@ -18,28 +30,32 @@ fn decode_substring(s: &str) -> i32 {
         replace_spelled_digits(&s)
     );
     let result: i32 = decoded.parse().unwrap();
-    println!("{result}");
 
     result
 }
 
 fn replace_spelled_digits(s: &str) -> String {
-    let spelled_digits: Vec<(&str, &str)> = vec![
-        ("1", "one"),
-        ("2", "two"),
-        ("3", "three"),
-        ("4", "four"),
-        ("5", "five"),
-        ("6", "six"),
-        ("7", "seven"),
-        ("8", "eight"),
-        ("9", "nine"),
-    ];
-
     let mut result = s.to_string();
+
+    let matches = get_spelled_matches(s);
+    if matches.len() > 0 {
+        let (_, replacement, digit) = matches[0]; 
+        result = result.replace(digit, replacement);
+    }
+
+    let matches = get_spelled_matches(&result);
+    if matches.len() > 0 {
+        let (_, replacement, digit) = matches[matches.len() - 1]; 
+        result = result.replace(digit, replacement);
+    }
+
+    result
+}
+
+fn get_spelled_matches(s: &str) -> Vec<(usize, &str, &str)> {
     let mut matches: Vec<(usize, &str, &str)> = Vec::new();
 
-    for (replacement, digit) in &spelled_digits {
+    for (replacement, digit) in SPELLED_DIGITS {
         match s.find(digit) {
             Some(x) => matches.push((x, replacement, digit)),
             None => (),
@@ -48,15 +64,7 @@ fn replace_spelled_digits(s: &str) -> String {
 
     matches.sort_by_key(|k| k.0);
 
-    for (_, replacement, digit) in &matches {
-        result = result.replace(digit, replacement);
-    }
-
-    if matches.len() > 0 {
-        println!("{s} -> {result}");
-    };
-
-    result
+    matches
 }
 
 fn first_last_numeric(s: String) -> String {
@@ -76,74 +84,34 @@ fn first_last_numeric(s: String) -> String {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_first_example() {
-        let example = "1abc2";
+    use rstest::rstest;
 
-        assert_eq!(12, decode_substring(example));
+    #[rstest]
+    #[case("1abc2", 12)]
+    #[case("pqr3stu8vwx", 38)]
+    #[case("a1b2c3d4e5f", 15)]
+    #[case("treb7uchet", 77)]
+    fn part_one(
+        #[case] line: &str,
+        #[case] expected: i32
+    ) {
+        assert_eq!(expected, decode_substring(line));
     }
 
-    #[test]
-    fn test_second_example() {
-        let example = "pqr3stu8vwx";
-
-        assert_eq!(38, decode_substring(example));
-    }
-
-    #[test]
-    fn test_third_example() {
-        let example = "a1b2c3d4e5f";
-
-        assert_eq!(15, decode_substring(example));
-    }
-
-    #[test]
-    fn test_fourth_example() {
-        let example = "treb7uchet";
-
-        assert_eq!(77, decode_substring(example));
-    }
-
-    #[test]
-    fn test_part_2_example_1() {
-        let example = "two1nine";
-        assert_eq!(29, decode_substring(example));
-    }
-    
-    #[test]
-    fn test_part_2_example_2() {
-        let example = "eightwothree";
-        assert_eq!(83, decode_substring(example));
-    }
-    
-    #[test]
-    fn test_part_2_example_3() {
-        let example = "abcone2threexyz";
-        assert_eq!(13, decode_substring(example));
-    }
-
-    #[test]
-    fn test_part_2_example_4() {
-        let example = "xtwone3four";
-        assert_eq!(24, decode_substring(example));
-    }
-
-    #[test]
-    fn test_part_2_example_5() {
-        let example = "4nineeightseven2";
-        assert_eq!(42, decode_substring(example));
-    }
-
-    #[test]
-    fn test_part_2_example_6() {
-        let example = "zoneight234";
-        assert_eq!(14, decode_substring(example));
-    }
-
-    #[test]
-    fn test_part_2_example_7() {
-        let example = "7pqrstsixteen";
-        assert_eq!(76, decode_substring(example));
+    #[rstest]
+    #[case("two1nine", 29)]
+    #[case("eightwothree", 83)]
+    #[case("abcone2threexyz", 13)]
+    #[case("xtwone3four", 24)]
+    #[case("4nineeightseven2", 42)]
+    #[case("zoneight234", 14)]
+    #[case("7pqrstsixteen", 76)]
+    #[case("two9jzgzbtwonef", 21)]
+    fn part_two(
+        #[case] line: &str,
+        #[case] expected: i32
+    ) {
+        assert_eq!(expected, decode_substring(line));
     }
 }
 
