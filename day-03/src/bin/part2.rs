@@ -27,7 +27,6 @@ fn part_two(input: &str) -> i32 {
             if c == '*' {
                 let adjacent_numbers =
                     get_adjacent_numbers(idx, &line, line_len, &previous_line, iter.peek());
-                dbg!(&adjacent_numbers);
                 if adjacent_numbers.len() == 2 {
                     result += &adjacent_numbers[0] * &adjacent_numbers[1];
                 }
