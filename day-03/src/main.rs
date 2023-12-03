@@ -64,8 +64,6 @@ fn part_one(input: &str) -> i32 {
                     to_add.push(*number);
                     result += number;
                 };
-
-                number_start = None;
             }
         }
         // println!("Adding {:?}", to_add);
