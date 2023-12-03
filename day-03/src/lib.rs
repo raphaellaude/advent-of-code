@@ -1,14 +1,14 @@
 use std::fs;
 use std::ops::Range;
 
-fn main() {
+pub fn process() {
     let input = fs::read_to_string("input.txt").expect("Could not read the file");
 
     let result = part_two(&input);
-    println!("Part 1: {}", result);
+    println!("Part 2: {}", result);
 }
 
-fn part_two(input: &str) -> i32 {
+pub fn part_two(input: &str) -> i32 {
     let mut iter = input.lines().peekable();
     let mut result = 0;
 

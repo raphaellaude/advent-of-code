@@ -1,3 +1,4 @@
+use day_03::part_two;
 use std::fs;
 
 fn main() {
@@ -5,6 +6,9 @@ fn main() {
 
     let result = part_one(&input);
     println!("Part 1: {}", result);
+
+    let result = part_two(&input);
+    println!("Part 2: {result}");
 }
 
 fn part_one(input: &str) -> i32 {
