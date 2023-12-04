@@ -8,7 +8,6 @@ pub fn part_one(input: &str) -> u32 {
         .lines()
         .map(|line| {
             let count = intersection_count(parse_line(&line));
-            dbg!(count);
             if count <= 1 {
                 return base.pow(count) - 1;
             }
@@ -28,7 +27,6 @@ fn parse_line(line: &str) -> (HashSet<i32>, HashSet<i32>) {
             s.split(' ').filter(|s| s.len() > 0).for_each(|i| {
                 set.insert(i.trim().parse::<i32>().unwrap());
             });
-            // dbg!(&set);
             set
         })
         .collect();
