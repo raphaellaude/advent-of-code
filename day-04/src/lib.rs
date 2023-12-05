@@ -18,34 +18,27 @@ pub fn part_one(input: &str) -> u32 {
 }
 
 pub fn part_two(input: &str) -> usize {
-    let mut counts: Vec<u32> = input
+    let counts: Vec<u32> = input
         .lines()
         .map(|line| intersection_count(parse_line(&line)))
         .collect();
 
-    let mut idx = 0;
+    count_cards(0, counts.len(), &counts)
+}
 
-    while idx < 10 {
-        let count = usize::try_from(*&counts[idx]).unwrap();
-
-        let to_insert = counts[(idx * 2 + 1)..(idx * 2 + count + 1)]
-            .to_owned()
-            .clone();
-        dbg!(&to_insert);
-
-        for x in 0..(count) {
-            let left_key = idx + x + 2;
-            // let right_key = idx * 2 + (x - 1) * 2 + 1;
-            dbg!(idx, left_key, to_insert[x]);
-            counts.insert(left_key, to_insert[x]);
-        }
-
-        println!("{:?}", &counts);
-
-        idx += 1;
-    }
-
-    counts.len()
+fn count_cards(start: usize, end: usize, counts: &[u32]) -> usize {
+    counts[start..end]
+        .iter()
+        // .enumerate()
+        .map(|count| {
+            if *count != 0 {
+                let count = usize::try_from(*count).unwrap();
+                // dbg!(idx, count, &counts[(start + 1)..(start + 1 + count)]);
+                count_cards(start + 1, start + 1 + count, &counts);
+            }
+            1
+        })
+        .sum()
 }
 
 fn parse_line(line: &str) -> (HashSet<i32>, HashSet<i32>) {
