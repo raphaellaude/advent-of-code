@@ -1,6 +1,9 @@
 use itertools::Itertools;
 
-use std::{collections::HashSet, convert::TryFrom};
+use std::{
+    collections::{HashMap, HashSet},
+    convert::TryFrom,
+};
 
 pub fn part_one(input: &str) -> u32 {
     let base: u32 = 2;
@@ -25,36 +28,48 @@ pub fn part_two(input: &str) -> usize {
 
     let mut result = 0;
 
+    let mut memo = HashMap::new();
+
     for idx in 0..counts.len() {
-        result += count_cards(idx, counts.len(), &counts);
+        result += count_cards(idx, counts.len(), &counts, &mut memo);
     }
 
     result
 }
 
-fn count_cards(start: usize, end: usize, counts: &[u32]) -> usize {
+fn count_cards(
+    start: usize,
+    end: usize,
+    counts: &[u32],
+    memo: &mut HashMap<usize, usize>,
+) -> usize {
     let mut total = 1;
     let matches = usize::try_from(counts[start]).unwrap();
 
+    if let Some(&cached) = memo.get(&start) {
+        return cached;
+    }
+
     for i in 1..=matches {
         if start + i < end {
-            total += count_cards(start + i, end, counts);
+            total += count_cards(start + i, end, counts, memo);
         }
     }
 
+    memo.insert(start, total);
     total
 }
 
-// fn print_range(start: usize, end: usize, max_span: usize) -> String {
-//     let mut s = "-".repeat(max_span);
-//     for i in start..end {
-//         s.replace_range(i..i + 1, "*");
-//     }
-//     if start + 1 == end {
-//         s.replace_range(end..end + 1, "X");
-//     }
-//     s
-// }
+fn _print_range(start: usize, end: usize, max_span: usize) -> String {
+    let mut s = "-".repeat(max_span);
+    for i in start..end {
+        s.replace_range(i..i + 1, "*");
+    }
+    if start + 1 == end {
+        s.replace_range(end..end + 1, "X");
+    }
+    s
+}
 
 fn parse_line(line: &str) -> (HashSet<i32>, HashSet<i32>) {
     let sets: Vec<HashSet<i32>> = line
