@@ -1,6 +1,6 @@
 use itertools::Itertools;
-use std::collections::HashSet;
-use std::convert::TryFrom;
+
+use std::{collections::HashSet, convert::TryFrom};
 
 pub fn part_one(input: &str) -> u32 {
     let base: u32 = 2;
@@ -23,27 +23,38 @@ pub fn part_two(input: &str) -> usize {
         .map(|line| intersection_count(parse_line(&line)))
         .collect();
 
-    count_cards(0, counts.len(), &counts)
+    let mut result = 0;
+
+    for idx in 0..counts.len() {
+        result += count_cards(idx, counts.len(), &counts);
+    }
+
+    result
 }
 
 fn count_cards(start: usize, end: usize, counts: &[u32]) -> usize {
-    counts[start..end]
-        .iter()
-        .map(|count| {
-            let count = usize::try_from(*count).unwrap();
-            if count > 0 {
-                dbg!(
-                    start,
-                    &counts[start],
-                    count,
-                    &counts[(start + 1)..(start + 1 + count)]
-                );
-                return count_cards(start + 1, start + 1 + count, &counts);
-            }
-            1
-        })
-        .sum()
+    let mut total = 1;
+    let matches = usize::try_from(counts[start]).unwrap();
+
+    for i in 1..=matches {
+        if start + i < end {
+            total += count_cards(start + i, end, counts);
+        }
+    }
+
+    total
 }
+
+// fn print_range(start: usize, end: usize, max_span: usize) -> String {
+//     let mut s = "-".repeat(max_span);
+//     for i in start..end {
+//         s.replace_range(i..i + 1, "*");
+//     }
+//     if start + 1 == end {
+//         s.replace_range(end..end + 1, "X");
+//     }
+//     s
+// }
 
 fn parse_line(line: &str) -> (HashSet<i32>, HashSet<i32>) {
     let sets: Vec<HashSet<i32>> = line
