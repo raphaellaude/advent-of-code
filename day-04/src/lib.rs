@@ -29,12 +29,10 @@ pub fn part_two(input: &str) -> usize {
 fn count_cards(start: usize, end: usize, counts: &[u32]) -> usize {
     counts[start..end]
         .iter()
-        .enumerate()
-        .map(|(idx, count)| {
-            if *count > 0 {
-                let count = usize::try_from(*count).unwrap();
+        .map(|count| {
+            let count = usize::try_from(*count).unwrap();
+            if count > 0 {
                 dbg!(
-                    idx,
                     start,
                     &counts[start],
                     count,
