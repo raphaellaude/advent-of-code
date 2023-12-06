@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::str;
 
 pub fn part_one(input: &str) -> u64 {
     let mut iter = input.split("\n\n");
@@ -14,15 +14,7 @@ pub fn part_one(input: &str) -> u64 {
 
     println!("{:?}", initial_seeds);
 
-    let sets: Vec<HashMap<u64, u64>> = iter
-        .map(|section| {
-            let mut lines = section.split(":\n");
-            lines.next();
-            map_from_ranges(lines.next().unwrap())
-        })
-        .collect();
-
-    println!("Sets assembled");
+    let sets: Vec<Vec<(u64, u64, u64)>> = get_sets(iter);
 
     initial_seeds
         .iter()
@@ -31,7 +23,16 @@ pub fn part_one(input: &str) -> u64 {
         .expect("Was not able to determine min seed value.")
 }
 
-fn location_from_seed(seed: u64, sets: &Vec<HashMap<u64, u64>>) -> u64 {
+fn get_sets(iter: str::Split<'_, &str>) -> Vec<Vec<(u64, u64, u64)>> {
+    iter.map(|section| {
+        let mut lines = section.split(":\n");
+        lines.next();
+        map_from_ranges(lines.next().unwrap())
+    })
+    .collect()
+}
+
+fn location_from_seed(seed: u64, sets: &Vec<Vec<(u64, u64, u64)>>) -> u64 {
     let mut result: u64 = seed;
 
     for set in sets {
@@ -41,28 +42,27 @@ fn location_from_seed(seed: u64, sets: &Vec<HashMap<u64, u64>>) -> u64 {
     result
 }
 
-fn map_from_ranges(input: &str) -> HashMap<u64, u64> {
-    let mut set: HashMap<u64, u64> = HashMap::new();
+fn map_from_ranges(input: &str) -> Vec<(u64, u64, u64)> {
+    input
+        .lines()
+        .map(|line| {
+            let mut iter = line.split(' ');
+            let source = iter.next().unwrap().parse::<u64>().unwrap();
+            let dest = iter.next().unwrap().parse::<u64>().unwrap();
+            let n_steps = iter.next().unwrap().parse::<u64>().unwrap();
 
-    input.lines().for_each(|line| {
-        let mut iter = line.split(' ');
-        let source = iter.next().unwrap().parse::<u64>().unwrap();
-        let dest = iter.next().unwrap().parse::<u64>().unwrap();
-        let n_steps = iter.next().unwrap().parse::<u64>().unwrap();
-
-        for idx in 0..n_steps {
-            set.insert(dest + idx, source + idx);
-        }
-    });
-
-    set
+            (source, dest, n_steps)
+        })
+        .collect()
 }
 
-fn map_value(value: u64, set: &HashMap<u64, u64>) -> u64 {
-    match set.get(&value) {
-        Some(result) => *result,
-        _ => value,
+fn map_value(value: u64, set: &Vec<(u64, u64, u64)>) -> u64 {
+    for (source, dest, n_steps) in set {
+        if &value >= dest && value < dest + n_steps {
+            return value - dest + source;
+        }
     }
+    value
 }
 
 #[cfg(test)]
