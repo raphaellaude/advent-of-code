@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::str;
 
 pub fn part_one(input: &str) -> u64 {
@@ -21,6 +22,39 @@ pub fn part_one(input: &str) -> u64 {
         .map(|seed| location_from_seed(*seed, &sets))
         .min()
         .expect("Was not able to determine min seed value.")
+}
+
+pub fn part_two(input: &str) -> u64 {
+    let mut iter = input.split("\n\n");
+
+    let all_seeds = iter
+        .next()
+        .unwrap()
+        .split(": ")
+        .last()
+        .unwrap()
+        .split(" ")
+        .map(|s| s.parse::<u64>().unwrap())
+        .collect::<Vec<u64>>();
+
+    let sets: Vec<Vec<(u64, u64, u64)>> = get_sets(iter);
+
+    let mut min_val = 18446744073709551615;
+
+    for (start, end) in (0..all_seeds.len()).tuples() {
+        dbg!(vec![&all_seeds[start], &all_seeds[end]]);
+
+        for seed in all_seeds[start]..all_seeds[start] + all_seeds[end] {
+            let location = location_from_seed(seed, &sets);
+
+            if location < min_val {
+                println!("New min val {min_val} for {seed}!");
+                min_val = location;
+            }
+        }
+    }
+
+    min_val
 }
 
 fn get_sets(iter: str::Split<'_, &str>) -> Vec<Vec<(u64, u64, u64)>> {
