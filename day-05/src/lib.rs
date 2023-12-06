@@ -1,7 +1,8 @@
+use indicatif::ProgressIterator;
 use itertools::Itertools;
 use std::str;
 
-pub fn part_one(input: &str) -> u64 {
+pub fn part_one(input: &str) -> usize {
     let mut iter = input.split("\n\n");
     let initial_seeds = iter
         .next()
@@ -10,12 +11,12 @@ pub fn part_one(input: &str) -> u64 {
         .last()
         .unwrap()
         .split(" ")
-        .map(|s| s.parse::<u64>().unwrap())
-        .collect::<Vec<u64>>();
+        .map(|s| s.parse::<usize>().unwrap())
+        .collect::<Vec<usize>>();
 
     println!("{:?}", initial_seeds);
 
-    let sets: Vec<Vec<(u64, u64, u64)>> = get_sets(iter);
+    let sets: Vec<Vec<(usize, usize, usize)>> = get_sets(iter);
 
     initial_seeds
         .iter()
@@ -24,7 +25,7 @@ pub fn part_one(input: &str) -> u64 {
         .expect("Was not able to determine min seed value.")
 }
 
-pub fn part_two(input: &str) -> u64 {
+pub fn part_two(input: &str) -> usize {
     let mut iter = input.split("\n\n");
 
     let all_seeds = iter
@@ -34,21 +35,24 @@ pub fn part_two(input: &str) -> u64 {
         .last()
         .unwrap()
         .split(" ")
-        .map(|s| s.parse::<u64>().unwrap())
-        .collect::<Vec<u64>>();
+        .map(|s| s.parse::<usize>().unwrap())
+        .collect::<Vec<usize>>();
 
-    let sets: Vec<Vec<(u64, u64, u64)>> = get_sets(iter);
+    let sets: Vec<Vec<(usize, usize, usize)>> = get_sets(iter);
 
     let mut min_val = 18446744073709551615;
 
     for (start, end) in (0..all_seeds.len()).tuples() {
-        dbg!(vec![&all_seeds[start], &all_seeds[end]]);
+        println!(
+            "Starting next batch {:?}",
+            vec![&all_seeds[start], &all_seeds[end]]
+        );
 
-        for seed in all_seeds[start]..all_seeds[start] + all_seeds[end] {
+        for seed in (all_seeds[start]..all_seeds[start] + all_seeds[end]).progress() {
             let location = location_from_seed(seed, &sets);
 
             if location < min_val {
-                println!("New min val {min_val} for {seed}!");
+                println!("New min val {location} for {seed}!");
                 min_val = location;
             }
         }
@@ -57,7 +61,7 @@ pub fn part_two(input: &str) -> u64 {
     min_val
 }
 
-fn get_sets(iter: str::Split<'_, &str>) -> Vec<Vec<(u64, u64, u64)>> {
+fn get_sets(iter: str::Split<'_, &str>) -> Vec<Vec<(usize, usize, usize)>> {
     iter.map(|section| {
         let mut lines = section.split(":\n");
         lines.next();
@@ -66,8 +70,22 @@ fn get_sets(iter: str::Split<'_, &str>) -> Vec<Vec<(u64, u64, u64)>> {
     .collect()
 }
 
-fn location_from_seed(seed: u64, sets: &Vec<Vec<(u64, u64, u64)>>) -> u64 {
-    let mut result: u64 = seed;
+fn map_from_ranges(input: &str) -> Vec<(usize, usize, usize)> {
+    input
+        .lines()
+        .map(|line| {
+            let mut iter = line.split(' ');
+            let source = iter.next().unwrap().parse::<usize>().unwrap();
+            let dest = iter.next().unwrap().parse::<usize>().unwrap();
+            let n_steps = iter.next().unwrap().parse::<usize>().unwrap();
+
+            (source, dest, n_steps)
+        })
+        .collect()
+}
+
+fn location_from_seed(seed: usize, sets: &Vec<Vec<(usize, usize, usize)>>) -> usize {
+    let mut result: usize = seed;
 
     for set in sets {
         result = map_value(result, set);
@@ -76,21 +94,7 @@ fn location_from_seed(seed: u64, sets: &Vec<Vec<(u64, u64, u64)>>) -> u64 {
     result
 }
 
-fn map_from_ranges(input: &str) -> Vec<(u64, u64, u64)> {
-    input
-        .lines()
-        .map(|line| {
-            let mut iter = line.split(' ');
-            let source = iter.next().unwrap().parse::<u64>().unwrap();
-            let dest = iter.next().unwrap().parse::<u64>().unwrap();
-            let n_steps = iter.next().unwrap().parse::<u64>().unwrap();
-
-            (source, dest, n_steps)
-        })
-        .collect()
-}
-
-fn map_value(value: u64, set: &Vec<(u64, u64, u64)>) -> u64 {
+fn map_value(value: usize, set: &Vec<(usize, usize, usize)>) -> usize {
     for (source, dest, n_steps) in set {
         if &value >= dest && value < dest + n_steps {
             return value - dest + source;
