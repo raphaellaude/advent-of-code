@@ -104,7 +104,6 @@ impl<'a> Ord for Hand<'a> {
                 "Cards have equal rank! Must be identical {:?} {:?}",
                 self.cards, other.cards
             );
-            // return Ordering::Equal;
         } else if self.t < other.t {
             return Ordering::Less;
         } else {
@@ -116,6 +115,8 @@ impl<'a> Ord for Hand<'a> {
 pub fn part_one(input: &str) -> usize {
     let mut hands: Vec<_> = input.lines().map(|line| Hand::from_string(&line)).collect();
     hands.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    // dbg!(&hands);
 
     hands
         .iter()
