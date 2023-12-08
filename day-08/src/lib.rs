@@ -7,12 +7,27 @@ struct Edges<'a> {
 }
 
 pub fn part_one(input: &str) -> usize {
-    let (instructions, graph) = parse_input(input);
+    let (instructions, mut graph) = parse_input(input);
 
-    dbg!(instructions);
-    dbg!(graph);
+    // dbg!(instructions);
+    // dbg!(&graph);
 
     let mut result = 0;
+
+    let first_node = &graph.first_entry().unwrap();
+    let mut current_node = *first_node.key();
+
+    while current_node != "ZZZ" {
+        for next_move in instructions.chars() {
+            let edges = &graph.get(current_node).unwrap();
+            if next_move == 'L' {
+                current_node = edges.left;
+            } else {
+                current_node = edges.right;
+            }
+            result += 1;
+        }
+    }
 
     result
 }
