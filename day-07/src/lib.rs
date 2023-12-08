@@ -1,10 +1,10 @@
 use lazy_static::lazy_static;
 use std::cmp::Ordering;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 lazy_static! {
-    pub static ref RANKS: HashMap<char, u8> = {
-        let mut m = HashMap::new();
+    pub static ref RANKS: BTreeMap<char, u8> = {
+        let mut m = BTreeMap::new();
         m.insert('A', 0);
         m.insert('K', 1);
         m.insert('Q', 2);
@@ -23,12 +23,12 @@ lazy_static! {
 }
 
 lazy_static! {
-    pub static ref FANCY_RANKS: HashMap<char, u8> = {
-        let mut m = HashMap::new();
+    pub static ref FANCY_RANKS: BTreeMap<char, u8> = {
+        let mut m = BTreeMap::new();
+        m.insert('J', 13);
         m.insert('A', 0);
         m.insert('K', 1);
         m.insert('Q', 2);
-        m.insert('J', 13);
         m.insert('T', 4);
         m.insert('9', 5);
         m.insert('8', 6);
@@ -69,7 +69,7 @@ impl<'a> Hand<'a> {
 }
 
 fn hand_type(cards: &str, is_fancy: bool) -> usize {
-    let mut m = HashMap::new();
+    let mut m = BTreeMap::new();
 
     for c in cards.chars() {
         if m.contains_key(&c) {
@@ -105,12 +105,10 @@ fn hand_type(cards: &str, is_fancy: bool) -> usize {
         m.insert(best_card, m[&best_card] + n_js);
     }
 
-    // dbg!(cards, &m, score_counts(&m));
-
     score_counts(&m)
 }
 
-fn score_counts(m: &HashMap<char, u8>) -> usize {
+fn score_counts(m: &BTreeMap<char, u8>) -> usize {
     let l = m.len();
 
     if l == 1 {
