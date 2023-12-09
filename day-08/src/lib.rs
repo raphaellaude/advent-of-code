@@ -55,6 +55,47 @@ fn add_node_and_edges<'a>(line: &'a str, graph: &mut BTreeMap<&'a str, Edges<'a>
     graph.insert(node, Edges { left, right });
 }
 
+pub fn part_two(input: &str) -> usize {
+    let (instructions, graph) = parse_input(input);
+
+    // dbg!(instructions);
+    // dbg!(&graph);
+
+    let mut result = 0;
+
+    let mut current_nodes: Vec<&str> = graph
+        .keys()
+        .filter(|k| k.chars().last().unwrap() == 'A')
+        .copied()
+        .collect();
+
+    // dbg!(&graph);
+
+    while !current_nodes
+        .iter()
+        .all(|n| n.chars().last().unwrap() == 'Z')
+    {
+        for next_move in instructions.chars() {
+            current_nodes = current_nodes
+                .iter()
+                .map(|c| {
+                    let e = graph.get(*c).unwrap();
+                    if next_move == 'L' {
+                        e.left
+                    } else {
+                        e.right
+                    }
+                })
+                .collect();
+            // dbg!(&current_nodes);
+            result += 1;
+            println!("{result}");
+        }
+    }
+
+    result
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -81,5 +122,20 @@ AAA = (BBB, BBB)
 BBB = (AAA, ZZZ)
 ZZZ = (ZZZ, ZZZ)";
         assert_eq!(part_one(input), 6)
+    }
+
+    #[test]
+    fn test_part_two1() {
+        let input = "LR
+
+11A = (11B, XXX)
+11B = (XXX, 11Z)
+11Z = (11B, XXX)
+22A = (22B, XXX)
+22B = (22C, 22C)
+22C = (22Z, 22Z)
+22Z = (22B, 22B)
+XXX = (XXX, XXX)";
+        assert_eq!(part_two(input), 6)
     }
 }

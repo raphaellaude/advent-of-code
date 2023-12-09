@@ -1,4 +1,4 @@
-use day_08::part_one;
+use day_08::{part_one, part_two};
 use std::fs;
 
 fn main() {
@@ -7,6 +7,6 @@ fn main() {
     let result = part_one(&input);
     println!("Hello, world! {result}");
 
-    // let result = part_two(&input);
-    // println!("Hello, world! {result}");
+    let result = part_two(&input);
+    println!("Hello, world! {result}");
 }
