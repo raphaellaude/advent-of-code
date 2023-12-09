@@ -1,20 +1,19 @@
 pub fn part_one<'a>(input: &'a str) -> i64 {
-    let vals: Vec<Vec<i64>> = input
+    input
         .lines()
         .map(|v| {
-            v.split(' ')
-                .into_iter()
-                .map(|t| t.parse::<i64>().unwrap())
-                .collect()
+            diff_fold_vec(
+                v.split(' ')
+                    .into_iter()
+                    .map(|t| t.parse::<i64>().unwrap())
+                    .collect(),
+            )
         })
-        .collect();
-
-    vals.into_iter().map(diff_fold_vec).sum()
+        .sum()
 }
 
 fn diff_fold_vec(v: Vec<i64>) -> i64 {
     let mut total: i64 = 0;
-    // dbg!(&v);
 
     let l = v.len();
 
