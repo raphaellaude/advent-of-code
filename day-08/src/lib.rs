@@ -1,3 +1,4 @@
+use gcd::Gcd;
 use std::collections::BTreeMap;
 
 #[derive(Debug)]
@@ -8,9 +9,6 @@ struct Edges<'a> {
 
 pub fn part_one(input: &str) -> usize {
     let (instructions, mut graph) = parse_input(input);
-
-    // dbg!(instructions);
-    // dbg!(&graph);
 
     let mut result = 0;
 
@@ -58,38 +56,32 @@ fn add_node_and_edges<'a>(line: &'a str, graph: &mut BTreeMap<&'a str, Edges<'a>
 pub fn part_two(input: &str) -> usize {
     let (instructions, graph) = parse_input(input);
 
-    // dbg!(instructions);
-    // dbg!(&graph);
-
-    let mut result = 0;
-
-    let mut current_nodes: Vec<&str> = graph
+    let n_steps_to_z: Vec<usize> = graph
         .keys()
         .filter(|k| k.chars().last().unwrap() == 'A')
-        .copied()
+        .map(|n| n_steps_to_z(n, &graph, &instructions))
         .collect();
 
-    // dbg!(&graph);
+    n_steps_to_z.iter().fold(1, |acc, &num| lcm(acc, num))
+}
 
-    while !current_nodes
-        .iter()
-        .all(|n| n.chars().last().unwrap() == 'Z')
-    {
+fn lcm(a: usize, b: usize) -> usize {
+    (a * b) / a.gcd(b)
+}
+
+fn n_steps_to_z(start: &str, graph: &BTreeMap<&str, Edges>, instructions: &str) -> usize {
+    let mut result = 0;
+    let mut current_node = start;
+
+    while !current_node.ends_with('Z') {
         for next_move in instructions.chars() {
-            current_nodes = current_nodes
-                .iter()
-                .map(|c| {
-                    let e = graph.get(*c).unwrap();
-                    if next_move == 'L' {
-                        e.left
-                    } else {
-                        e.right
-                    }
-                })
-                .collect();
-            // dbg!(&current_nodes);
+            let edges = &graph.get(current_node).unwrap();
+            if next_move == 'L' {
+                current_node = edges.left;
+            } else {
+                current_node = edges.right;
+            }
             result += 1;
-            println!("{result}");
         }
     }
 
