@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 pub fn part_one(input: &str) -> i64 {
     parse(input, diff_fold_vec)
 }
@@ -19,41 +21,21 @@ fn parse(input: &str, f: fn(Vec<i64>) -> i64) -> i64 {
 }
 
 fn diff_fold_vec(v: Vec<i64>) -> i64 {
-    let mut total: i64 = 0;
-
     let l = v.len();
 
     if v.iter().all(|x| *x == 0) {
-        return total + v[l - 1];
+        return v[l - 1];
     }
 
-    total += diff_fold_vec(
-        v[1..]
-            .iter()
-            .enumerate()
-            .map(|(idx, x)| x - v[idx])
-            .collect(),
-    );
-
-    total + v[l - 1]
+    diff_fold_vec(v.iter().tuple_windows().map(|(y, x)| x - y).collect()) + v[l - 1]
 }
 
 fn diff_fold_vec_start(v: Vec<i64>) -> i64 {
-    let mut total: i64 = 0;
-
     if v.iter().all(|x| *x == 0) {
-        return v[0] - total;
+        return v[0];
     }
 
-    total += diff_fold_vec_start(
-        v[1..]
-            .iter()
-            .enumerate()
-            .map(|(idx, x)| x - v[idx])
-            .collect(),
-    );
-
-    v[0] - total
+    v[0] - diff_fold_vec_start(v.iter().tuple_windows().map(|(y, x)| x - y).collect())
 }
 
 #[cfg(test)]
