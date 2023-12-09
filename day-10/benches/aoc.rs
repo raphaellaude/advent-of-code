@@ -1,6 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
+use day_10::{part_one, part_two};
 use std::fs;
-use template::{part_one, part_two};
 
 fn bench(c: &mut Criterion) {
     c.bench_function("part1", |b| {
