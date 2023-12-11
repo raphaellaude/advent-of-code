@@ -1,29 +1,41 @@
 use std::collections::HashMap;
 
+use itertools::Itertools;
+
 pub fn part_one(input: &str) -> u32 {
     let line_len = input.lines().next().unwrap().len();
 
+    let path_lens: Vec<usize> = get_longest_paths(input, line_len)
+        .iter()
+        .map(|p| p.len())
+        .collect();
+
+    let distance = *path_lens.iter().max().unwrap() as u32;
+
+    if distance % 2 == 0 {
+        println!("Is even!!!");
+        return distance / 2;
+    }
+    distance / 2 + 1
+}
+
+fn get_longest_paths(input: &str, line_len: usize) -> Vec<Vec<usize>> {
     let (s_loc, hash_map) = parse_input(input, line_len);
     let mut longest_path: Vec<usize> = Vec::new();
 
     let first_moves = get_first_moves(s_loc, line_len);
-    // dbg!(&first_moves);
 
-    let mut path_lens: Vec<usize> = Vec::new();
+    let mut paths: Vec<Vec<usize>> = Vec::new();
 
     for first_move in first_moves {
         let mut prev_loc = s_loc;
-        // println!("Starting at {first_move}");
         let mut current_loc = Some(first_move);
 
         while current_loc.is_some() {
             let node = current_loc.unwrap();
             let kind = *hash_map.get(&node).unwrap();
 
-            // println!("{node} {prev_loc} {kind}");
-
             if kind == 'S' {
-                // || longest_path.len() > 10
                 break;
             }
 
@@ -33,17 +45,11 @@ pub fn part_one(input: &str) -> u32 {
             longest_path.push(node);
         }
 
-        path_lens.push(longest_path.len());
+        paths.push(longest_path.clone());
         longest_path.clear();
     }
 
-    let distance = *path_lens.iter().max().unwrap() as u32;
-
-    if distance % 2 == 0 {
-        println!("Is even!!!");
-        return distance / 2;
-    }
-    distance / 2 + 1
+    paths
 }
 
 fn get_first_moves(starting_pos: usize, line_len: usize) -> Vec<usize> {
@@ -58,8 +64,51 @@ fn get_first_moves(starting_pos: usize, line_len: usize) -> Vec<usize> {
     neighbors
 }
 
-pub fn part_two(_input: &str) -> usize {
-    todo!()
+pub fn part_two(input: &str) -> usize {
+    let line_len = input.lines().next().unwrap().len();
+    // dbg!(line_len);
+
+    let longest_paths: Vec<Vec<usize>> = get_longest_paths(input, line_len);
+    let max_path_len: usize = longest_paths.iter().map(|p| p.len()).max().unwrap();
+
+    let longest_paths: Vec<&Vec<usize>> = longest_paths
+        .iter()
+        .filter(|p| p.len() == max_path_len)
+        .collect();
+    let mut longest_path: Vec<usize> = longest_paths[0].clone();
+    longest_path.sort();
+
+    let mut result = 0;
+
+    let n_lines = longest_path.iter().max().unwrap() % line_len + 1;
+    // dbg!(n_lines);
+
+    for line_no in 0..n_lines {
+        // dbg!(line_no);
+        let line_start = line_no * line_len;
+        let line_nodes: Vec<&usize> = longest_path
+            .iter()
+            .filter(|v| **v >= line_start && **v < line_start + line_len)
+            .collect();
+
+        let mut crossings = 0;
+
+        // dbg!(&line_nodes);
+
+        for (i, j) in line_nodes.iter().tuple_windows() {
+            crossings += 1;
+
+            let j = **j - line_no * line_len;
+            let i = **i - line_no * line_len;
+            println!("{line_no}, {i}, {j}");
+            if crossings % 2 == 1 && j - i - 1 > 0 {
+                println!("Adding {:?} on {line_no}: {i}->{j}", j - i - 1);
+                result += j - i - 1;
+            }
+        }
+    }
+
+    result
 }
 
 fn parse_input(input: &str, line_len: usize) -> (usize, HashMap<usize, char>) {
@@ -122,7 +171,6 @@ fn next_loc(loc: usize, prev_loc: usize, kind: char, line_len: usize) -> Option<
             }
         }
         'F' => {
-            // println!("AT F!!!! {loc} {prev_loc}");
             if loc == prev_loc - 1 {
                 Some(loc + line_len)
             } else {
@@ -157,6 +205,35 @@ SJLL7
 |F--J
 LJ.LJ";
         assert_eq!(part_one(&input), 8)
+    }
+
+    #[test]
+    fn test_part_two_simple() {
+        let input = "...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........";
+        assert_eq!(part_two(&input), 4)
+    }
+
+    #[test]
+    fn test_part_two_medium() {
+        let input = ".F----7F7F7F7F-7....
+.|F--7||||||||FJ....
+.||.FJ||||||||L7....
+FJL7L7LJLJ||LJ.L-7..
+L--J.L7...LJS7F-7L7.
+....F-J..F7FJ|L7L7L7
+....L7.F7||L7|.L7L7|
+.....|FJLJ|FJ|F7|.LJ
+....FJL-7.||.||||...
+....L---J.LJ.LJLJ...";
+        assert_eq!(part_two(&input), 8)
     }
 
     #[test]
