@@ -1,8 +1,8 @@
-pub fn part_one(input: &str) -> usize {
+pub fn part_one(_input: &str) -> usize {
     todo!()
 }
 
-pub fn part_two(input: &str) -> usize {
+pub fn part_two(_input: &str) -> usize {
     todo!()
 }
 
