@@ -1,6 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::fs;
-use template::{part_one, part_two};
+use template::part_one;
 
 fn bench(c: &mut Criterion) {
     c.bench_function("part1", |b| {
@@ -10,12 +10,12 @@ fn bench(c: &mut Criterion) {
         })
     });
 
-    c.bench_function("part2", |b| {
-        b.iter(|| {
-            let input = fs::read_to_string("input.txt").unwrap();
-            part_two(&input)
-        })
-    });
+    // c.bench_function("part2", |b| {
+    //     b.iter(|| {
+    //         let input = fs::read_to_string("input.txt").unwrap();
+    //         part_two(&input)
+    //     })
+    // });
 }
 
 criterion_group!(benches, bench);

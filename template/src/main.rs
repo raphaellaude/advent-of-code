@@ -1,5 +1,5 @@
 use std::fs;
-use template::{part_one, part_two};
+use template::part_one;
 
 fn main() {
     let input = fs::read_to_string("input.txt").expect("expected valid input");
@@ -7,6 +7,6 @@ fn main() {
     let result = part_one(&input);
     println!("Part 1: {result}");
 
-    let result = part_two(&input);
-    println!("Part 2: {result}");
+    // let result = part_two(&input);
+    // println!("Part 2: {result}");
 }
