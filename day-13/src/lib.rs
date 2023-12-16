@@ -35,18 +35,10 @@ fn parse_chunk(input: &str) -> Chunk {
 }
 
 fn summarize_reflection(chunk: Chunk) -> usize {
-    println!("GETTING VERT REFLECTIONS");
     let vert_reflections = n_reflections(chunk.vert);
-
-    println!("GETTING HORIZ REFLECTIONS");
     let horiz_reflections = n_reflections(chunk.horiz);
-
-    dbg!(&vert_reflections, &horiz_reflections);
-
     let vert_max_ids = get_max_by_index(&vert_reflections);
     let horiz_max_ids = get_max_by_index(&horiz_reflections);
-
-    dbg!(vert_max_ids, horiz_max_ids);
 
     let v_max = vert_reflections.iter().max();
     let h_max = horiz_reflections.iter().max();
@@ -86,8 +78,52 @@ fn get_max_by_index(reflection_counts: &Vec<usize>) -> Option<usize> {
         .map(|(index, _)| index)
 }
 
-pub fn part_two(_input: &str) -> usize {
-    todo!()
+fn find_smudged_reflection(btree: BTreeMap<u32, String>) -> Vec<usize> {
+    let n = btree.len();
+    (0..n)
+        .into_iter()
+        .map(|c| {
+            (0..c)
+                .into_iter()
+                .map(|idx| {
+                    let left = btree.get(&((c - (idx + 1)) as u32));
+                    let right = btree.get(&((c + idx) as u32));
+
+                    if left.is_some() && right.is_some() {
+                        left.unwrap()
+                            .chars()
+                            .zip(right.unwrap().chars())
+                            .fold(0, |cacc, (l, r)| if l != r { cacc + 1 } else { cacc + 0 })
+                    } else {
+                        0
+                    }
+                })
+                .sum::<i32>()
+        })
+        .enumerate()
+        .filter_map(|(idx, v)| if v == 1 { Some(idx) } else { None })
+        .collect::<Vec<usize>>()
+}
+
+pub fn part_two(input: &str) -> usize {
+    input
+        .split("\n\n")
+        .into_iter()
+        .map(parse_chunk)
+        .map(|chunk| {
+            let horiz_reflections = find_smudged_reflection(chunk.horiz);
+            if !horiz_reflections.is_empty() {
+                return horiz_reflections[0] * 100;
+            }
+
+            let vert_reflections = find_smudged_reflection(chunk.vert);
+            if !vert_reflections.is_empty() {
+                return vert_reflections[0];
+            }
+
+            panic!("No reflection found!!!");
+        })
+        .sum()
 }
 
 #[cfg(test)]
@@ -150,9 +186,23 @@ mod test {
         assert_eq!(part_one(input), expected)
     }
 
-    // #[test]
-    // fn test_part_two() {
-    //     let input = "";
-    //     assert_eq!(part_one(&input), 0)
-    // }
+    #[test]
+    fn test_part_two() {
+        let input = "#.##..##.
+..#.##.#.
+##......#
+##......#
+..#.##.#.
+..##..##.
+#.#.##.#.
+
+#...##..#
+#....#..#
+..##..###
+#####.##.
+#####.##.
+..##..###
+#....#..#";
+        assert_eq!(part_two(&input), 400)
+    }
 }
