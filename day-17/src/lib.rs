@@ -10,7 +10,7 @@ pub fn part_one(input: &str) -> u32 {
 
     let shortest_path = crucible_djikstra(&graph, 0, n_lines * line_len - 1);
 
-    dbg!(&shortest_path);
+    // dbg!(&shortest_path);
 
     shortest_path
         .iter()
@@ -69,7 +69,7 @@ fn crucible_djikstra(
     let dest = NodeIndex::new(dest);
 
     for node in graph.node_indices() {
-        dist.insert(node, 99999999);
+        dist.insert(node, u32::MAX);
         prev.insert(node, None);
         unvisited.insert(node);
     }
@@ -77,17 +77,16 @@ fn crucible_djikstra(
     dist.insert(source, 0);
 
     while !unvisited.is_empty() {
-        let (u, _) = dist
-            .clone()
-            .into_iter()
-            .filter(|(k, _)| unvisited.contains(k))
-            .min_by(|(_, x), (_, y)| x.cmp(y))
+        let u = unvisited
+            .iter()
+            .min_by_key(|&node| dist.get(node).unwrap_or(&u32::MAX))
+            .copied()
             .unwrap();
 
-        dbg!(&u);
+        // dbg!(&u);
 
         if u == dest {
-            println!("FOUND DESTINATION!!!");
+            // println!("FOUND DESTINATION!!!");
             let mut path = vec![];
             let mut current = dest;
 
@@ -96,6 +95,7 @@ fn crucible_djikstra(
                 current = prev.get(&current).unwrap().unwrap();
             }
 
+            path.reverse();
             return path;
         }
 
@@ -107,9 +107,9 @@ fn crucible_djikstra(
             .collect::<Vec<NodeIndex>>()
         {
             let alt = dist.get(&u).unwrap() + graph.node_weight(v).unwrap();
-            dbg!(&alt);
+            // dbg!(&alt);
             if &alt < dist.get(&v).unwrap() {
-                println!("INSERTING V FOR DIST {alt}");
+                // println!("INSERTING V FOR DIST {alt}");
                 dist.insert(v, alt);
                 prev.insert(v, Some(u));
             }
