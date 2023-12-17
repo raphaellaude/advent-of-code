@@ -1,4 +1,5 @@
-use std::collections::{HashMap, HashSet};
+use std::cmp::Ordering;
+use std::collections::{BinaryHeap, HashMap};
 
 use petgraph::{graph::NodeIndex, Directed, Graph};
 
@@ -9,8 +10,6 @@ pub fn part_one(input: &str) -> u32 {
     let line_len = input.lines().next().unwrap().chars().count();
 
     let shortest_path = crucible_djikstra(&graph, 0, n_lines * line_len - 1);
-
-    // dbg!(&shortest_path);
 
     shortest_path
         .iter()
@@ -53,9 +52,24 @@ fn parse(input: &str) -> Graph<u32, u32, Directed> {
     graph
 }
 
-/// crucible djikstra is the same as djikstra except
-/// you can't go in the same direction more than three times
-/// and can't go backwards
+#[derive(Copy, Clone, Eq, PartialEq)]
+struct State {
+    cost: u32,
+    position: NodeIndex,
+}
+
+impl Ord for State {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.cost.cmp(&self.cost)
+    }
+}
+
+impl PartialOrd for State {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 fn crucible_djikstra(
     graph: &Graph<u32, u32, Directed>,
     source: usize,
@@ -63,7 +77,7 @@ fn crucible_djikstra(
 ) -> Vec<NodeIndex> {
     let mut dist = HashMap::new();
     let mut prev = HashMap::new();
-    let mut unvisited = HashSet::new();
+    let mut heap = BinaryHeap::new();
 
     let source = NodeIndex::new(source);
     let dest = NodeIndex::new(dest);
@@ -71,47 +85,42 @@ fn crucible_djikstra(
     for node in graph.node_indices() {
         dist.insert(node, u32::MAX);
         prev.insert(node, None);
-        unvisited.insert(node);
     }
 
     dist.insert(source, 0);
+    heap.push(State {
+        cost: 0,
+        position: source,
+    });
 
-    while !unvisited.is_empty() {
-        let u = unvisited
-            .iter()
-            .min_by_key(|&node| dist.get(node).unwrap_or(&u32::MAX))
-            .copied()
-            .unwrap();
+    while let Some(State { cost, position }) = heap.pop() {
+        if cost > dist[&position] {
+            continue;
+        }
 
-        // dbg!(&u);
-
-        if u == dest {
-            // println!("FOUND DESTINATION!!!");
+        if position == dest {
             let mut path = vec![];
             let mut current = dest;
 
             while current != source {
                 path.push(current);
-                current = prev.get(&current).unwrap().unwrap();
+                current = prev[&current].unwrap();
             }
 
             path.reverse();
             return path;
         }
 
-        unvisited.remove(&u);
+        for v in graph.neighbors(position) {
+            let next = State {
+                cost: cost + graph.node_weight(v).unwrap(),
+                position: v,
+            };
 
-        for v in graph
-            .neighbors(u)
-            .filter(|v| unvisited.contains(v))
-            .collect::<Vec<NodeIndex>>()
-        {
-            let alt = dist.get(&u).unwrap() + graph.node_weight(v).unwrap();
-            // dbg!(&alt);
-            if &alt < dist.get(&v).unwrap() {
-                // println!("INSERTING V FOR DIST {alt}");
-                dist.insert(v, alt);
-                prev.insert(v, Some(u));
+            if next.cost < dist[&v] {
+                heap.push(next);
+                dist.insert(v, next.cost);
+                prev.insert(v, Some(position));
             }
         }
     }
