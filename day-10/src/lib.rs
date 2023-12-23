@@ -13,7 +13,7 @@ pub fn part_one(input: &str) -> u32 {
     let distance = *path_lens.iter().max().unwrap() as u32;
 
     if distance % 2 == 0 {
-        println!("Is even!!!");
+        // println!("Is even!!!");
         return distance / 2;
     }
     distance / 2 + 1
@@ -45,6 +45,8 @@ fn get_longest_paths(input: &str, line_len: usize) -> Vec<Vec<usize>> {
             longest_path.push(node);
         }
 
+        longest_path.push(s_loc);
+
         paths.push(longest_path.clone());
         longest_path.clear();
     }
@@ -66,7 +68,6 @@ fn get_first_moves(starting_pos: usize, line_len: usize) -> Vec<usize> {
 
 pub fn part_two(input: &str) -> usize {
     let line_len = input.lines().next().unwrap().len();
-    // dbg!(line_len);
 
     let longest_paths: Vec<Vec<usize>> = get_longest_paths(input, line_len);
     let max_path_len: usize = longest_paths.iter().map(|p| p.len()).max().unwrap();
@@ -75,40 +76,52 @@ pub fn part_two(input: &str) -> usize {
         .iter()
         .filter(|p| p.len() == max_path_len)
         .collect();
+
+    // dbg!(&longest_paths);
+
     let mut longest_path: Vec<usize> = longest_paths[0].clone();
     longest_path.sort();
 
     let mut result = 0;
 
     let n_lines = longest_path.iter().max().unwrap() % line_len + 1;
-    // dbg!(n_lines);
 
     for line_no in 0..n_lines {
-        // dbg!(line_no);
         let line_start = line_no * line_len;
-        let line_nodes: Vec<&usize> = longest_path
+        let line_nodes: Vec<usize> = longest_path
             .iter()
-            .filter(|v| **v >= line_start && **v < line_start + line_len)
+            .filter(|v| **v >= line_start && **v < (line_start + line_len))
+            .map(|v| *v - line_start)
             .collect();
 
-        let mut crossings = 0;
-
-        // dbg!(&line_nodes);
-
-        for (i, j) in line_nodes.iter().tuple_windows() {
-            crossings += 1;
-
-            let j = **j - line_no * line_len;
-            let i = **i - line_no * line_len;
-            println!("{line_no}, {i}, {j}");
-            if crossings % 2 == 1 && j - i - 1 > 0 {
-                println!("Adding {:?} on {line_no}: {i}->{j}", j - i - 1);
-                result += j - i - 1;
-            }
+        if line_nodes.len() > line_len {
+            panic!("More line nodes than length of line!");
         }
+
+        result += ray_cast(line_nodes, line_len);
     }
 
     result
+}
+
+fn ray_cast(extract_edges: Vec<usize>, _line_len: usize) -> usize {
+    let diffs: Vec<usize> = extract_edges
+        .into_iter()
+        .tuple_windows()
+        .map(|(a, b)| b - a - 1)
+        .collect();
+
+    // if diffs.iter().any(|v| *v > 0) {
+    //     dbg!(&diffs, diffs.len());
+    // }
+
+    let base = if diffs.len() % 2 == 0 { 1 } else { 0 };
+
+    diffs
+        .iter()
+        .enumerate()
+        .map(|(idx, diff)| if idx % 2 == base { *diff } else { 0 })
+        .sum()
 }
 
 fn parse_input(input: &str, line_len: usize) -> (usize, HashMap<usize, char>) {
@@ -186,6 +199,7 @@ fn next_loc(loc: usize, prev_loc: usize, kind: char, line_len: usize) -> Option<
 #[cfg(test)]
 mod test {
     use super::*;
+    use rstest::rstest;
 
     #[test]
     fn test_part_one_simple_loop() {
@@ -205,6 +219,16 @@ SJLL7
 |F--J
 LJ.LJ";
         assert_eq!(part_one(&input), 8)
+    }
+
+    #[test]
+    fn test_part_two_super_simple() {
+        let input = ".....
+.S-7.
+.|.|.
+.L-J.
+.....";
+        assert_eq!(part_two(&input), 1)
     }
 
     #[test]
@@ -249,5 +273,16 @@ L---JF-JLJ.||-FJLJJ7
 L.L7LFJ|||||FJL7||LJ
 L7JLJL-JLJLJL--JLJ.L";
         assert_eq!(part_two(&input), 10)
+    }
+
+    #[rstest]
+    #[case(vec![1, 2, 3, 5], 1)]
+    #[case(vec![2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 18, 19], 2)]
+    #[case(vec![3, 4, 5, 6, 7, 8, 9, 10, 14, 15], 3)]
+    #[case(vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 14, 15, 16, 17], 4)]
+    #[case(vec![1, 2, 3, 4], 0)]
+    #[case(vec![], 0)]
+    fn test_ray_cast(#[case] v: Vec<usize>, #[case] expected: usize) {
+        assert_eq!(ray_cast(v, 6), expected)
     }
 }

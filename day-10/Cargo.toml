@@ -12,3 +12,7 @@ petgraph = "0.6.4"
 [dev-dependencies]
 criterion = "0.5.1"
 rstest = "0.18.2"
+
+[[bench]]
+name = "aoc"
+harness = false
