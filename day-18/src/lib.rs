@@ -1,61 +1,42 @@
-use std::collections::HashSet;
-
 use glam::i32::IVec2;
 use itertools::Itertools;
 
-pub fn part_one(input: &str) -> usize {
+pub fn part_one(input: &str) -> i32 {
     let edges = parse(input);
     let start = IVec2 { x: 0, y: 0 };
 
     let mut points = vec![start];
-    let mut n_points = points.len();
 
-    edges.iter().for_each(|edge| {
-        let position = points[n_points - 1];
-        n_points += edge.length as usize;
+    edges.iter().enumerate().for_each(|(n_points, edge)| {
+        let position = points[n_points];
 
         match edge.direction {
-            Direction::Up => (0..edge.length).for_each(|i| {
-                points.push(IVec2 {
-                    x: position.x,
-                    y: position.y - (i + 1),
-                })
+            Direction::Up => points.push(IVec2 {
+                x: position.x,
+                y: position.y - edge.length,
             }),
-            Direction::Down => (0..edge.length).for_each(|i| {
-                points.push(IVec2 {
-                    x: position.x,
-                    y: position.y + i + 1,
-                })
+            Direction::Down => points.push(IVec2 {
+                x: position.x,
+                y: position.y + edge.length,
             }),
-            Direction::Left => (0..edge.length).for_each(|i| {
-                points.push(IVec2 {
-                    x: position.x - (i + 1),
-                    y: position.y,
-                })
+            Direction::Left => points.push(IVec2 {
+                x: position.x - edge.length,
+                y: position.y,
             }),
-            Direction::Right => (0..edge.length).for_each(|i| {
-                points.push(IVec2 {
-                    x: position.x + i + 1,
-                    y: position.y,
-                })
+            Direction::Right => points.push(IVec2 {
+                x: position.x + edge.length,
+                y: position.y,
             }),
         };
     });
 
-    points.sort_unstable_by_key(|edge| (edge.y, edge.x));
-
-    // let points: HashSet<IVec2> = HashSet::from_iter(points);
-
     points
         .iter()
-        .group_by(|x| x.y)
-        .into_iter()
-        .map(|(_x, group)| {
-            dbg!(_x);
-            count_line(group.sorted_by_key(|x| x.x).map(|v| *v).collect())
-        })
-        .sum::<usize>()
-        - 1
+        .tuple_windows()
+        .map(|(a, b)| a.x * b.y - a.y * b.x + (b.x - a.x + b.y - a.y).abs())
+        .sum::<i32>()
+        / 2
+        + 1
 }
 
 #[derive(Debug)]
@@ -91,30 +72,6 @@ fn parse(input: &str) -> Vec<Edge> {
             }
         })
         .collect()
-}
-
-fn count_line(line: Vec<IVec2>) -> usize {
-    let mut total = line.len();
-
-    dbg!(&line);
-
-    let mut inside = true;
-    let mut v = line[0].x;
-
-    line[1..].iter().for_each(|x| {
-        if x.x - 1 > v {
-            if inside {
-                total += (x.x - v - 1) as usize;
-            } else {
-                inside = !inside;
-            }
-        }
-        v = x.x;
-    });
-
-    dbg!(total);
-
-    total
 }
 
 pub fn part_two(_input: &str) -> usize {
