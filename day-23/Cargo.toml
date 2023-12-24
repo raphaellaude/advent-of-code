@@ -1,0 +1,15 @@
+[package]
+name = "template"
+version = "0.1.0"
+edition = "2021"
+
+[dev-dependencies]
+criterion = "0.5.1"
+rstest = "0.18.2"
+
+[[bench]]
+name = "aoc"
+harness = false
+
+[dependencies]
+glam = "0.25.0"
