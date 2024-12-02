@@ -10,7 +10,7 @@ func main() {
 	// Part 1
 	input_file := "./input.txt"
 	result := Part1(input_file)
-	fmt.Printf("Part 1 result go %d", result)
+	fmt.Println("Part 1 result: ", result)
 }
 
 func check(e error) {

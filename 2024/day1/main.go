@@ -14,7 +14,10 @@ func main() {
 	// Part 1
 	input_file := "./input.txt"
 	result := Part1(input_file)
-	fmt.Printf("Part 1 result go %d", result)
+	fmt.Println("Part 1 result: ", result)
+
+	result = Part2(input_file)
+	fmt.Println("Part 2 result: ", result)
 }
 
 func check(e error) {
@@ -53,6 +56,38 @@ func Part1(input_file string) int {
 
 	for idx := 0; idx < len(l1); idx++ {
 		total += math.Abs(l1[idx] - l2[idx])
+	}
+
+	return int(total)
+}
+
+func Part2(input_file string) int {
+	file, err := os.Open(input_file)
+	check(err)
+	scanner := bufio.NewScanner(file)
+
+	var total float64
+
+	var l1 []float64
+	counts := make(map[float64]int)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		split := strings.Split(line, "   ")
+		_a, _b := split[0], split[1]
+
+		a, err := strconv.ParseFloat(_a, 64)
+		check(err)
+
+		b, err := strconv.ParseFloat(_b, 64)
+		check(err)
+
+		l1 = append(l1, a)
+		counts[b]++
+	}
+
+	for idx := 0; idx < len(l1); idx++ {
+		total += l1[idx] * float64(counts[l1[idx]])
 	}
 
 	return int(total)
