@@ -1,9 +1,13 @@
-package aoc
+package main
 
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
+	"sort"
+	"strconv"
+	"strings"
 )
 
 func main() {
@@ -24,11 +28,32 @@ func Part1(input_file string) int {
 	check(err)
 	scanner := bufio.NewScanner(file)
 
-	total := 0
+	var total float64
+
+	var l1 []float64
+	var l2 []float64
+
 	for scanner.Scan() {
 		line := scanner.Text()
-		fmt.Println(line)
+		split := strings.Split(line, "   ")
+		_a, _b := split[0], split[1]
+
+		a, err := strconv.ParseFloat(_a, 64)
+		check(err)
+
+		b, err := strconv.ParseFloat(_b, 64)
+		check(err)
+
+		l1 = append(l1, a)
+		l2 = append(l2, b)
 	}
 
-	return total
+	sort.Float64s(l1)
+	sort.Float64s(l2)
+
+	for idx := 0; idx < len(l1); idx++ {
+		total += math.Abs(l1[idx] - l2[idx])
+	}
+
+	return int(total)
 }
