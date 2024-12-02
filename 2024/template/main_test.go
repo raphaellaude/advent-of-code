@@ -1,4 +1,4 @@
-package main
+package aoc
 
 import (
 	"testing"
@@ -6,8 +6,10 @@ import (
 
 func TestMain(t *testing.T) {
 	input_file := "./test.txt"
+	want := 0
+
 	got := Part1(input_file)
-	if got != 15 {
-		t.Errorf("Part1 = %d; want 15", got)
+	if got != want {
+		t.Errorf("Part1 = %d; want %d", got, want)
 	}
 }
