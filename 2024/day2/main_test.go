@@ -50,6 +50,7 @@ func TestIsValidUpAndDownIssue(t *testing.T) {
 	nums := []string{"2", "4", "3", "4", "5"}
 	tolerance := 1
 	want := true
+	// Valid answer would be 2 3 4 5, removing the FIRST abberation
 
 	got := IsValid(nums, tolerance)
 	if got != want {

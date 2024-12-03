@@ -29,8 +29,12 @@ func CheckReports(input_file string, tolerance int) int {
 		line := scanner.Text()
 		nums := strings.Split(line, " ")
 
+		fmt.Println("Checking: ", nums)
 		if IsValid(nums, tolerance) {
+			fmt.Println("Valid path: ", nums)
 			total++
+		} else {
+			fmt.Println("Invalid path")
 		}
 	}
 
@@ -51,7 +55,6 @@ func Abs(i int) int {
 }
 
 func IsValid(nums []string, tolerance int) bool {
-	fmt.Println("Checking: ", nums)
 	var direction int
 	var num_errors int
 
@@ -71,20 +74,27 @@ func IsValid(nums []string, tolerance int) bool {
 			num_errors++
 
 			if num_errors > tolerance {
-				fmt.Println("Too many errors: ", num_errors)
 				return false
 			}
 
-			nums = RemoveAbbearantValue(nums, &i)
-			fmt.Println("Removed abberrant value: ", nums)
+			nums2 := slices.Clone(nums)
+
+			nums1 := slices.Delete(nums, i, i+1)
+			nums2 = slices.Delete(nums2, i+1, i+2)
+
+			to_test := []bool{IsValid(nums1, tolerance-1), IsValid(nums2, tolerance-1)}
+			return Any(to_test, func(t bool) bool { return t })
 		}
 	}
 
-	fmt.Println("Valid path: ", nums)
 	return true
 }
 
-func RemoveAbbearantValue(nums []string, i *int) []string {
-	*i -= 1
-	return slices.Delete(nums, *i+2, *i+3)
+func Any[T any](ts []T, pred func(T) bool) bool {
+	for _, t := range ts {
+		if pred(t) {
+			return true
+		}
+	}
+	return false
 }
