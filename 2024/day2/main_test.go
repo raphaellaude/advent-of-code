@@ -24,6 +24,16 @@ func TestPart2(t *testing.T) {
 	}
 }
 
+func TestPart2EdgeCases(t *testing.T) {
+	input_file := "./tests2.txt"
+	want := 19
+
+	got := CheckReports(input_file, 1)
+	if got != want {
+		t.Errorf("Part2 = %d; want %d", got, want)
+	}
+}
+
 func TestIsValidEnding(t *testing.T) {
 	nums := []string{"2", "4", "6", "9", "10", "9"}
 	tolerance := 1
@@ -51,6 +61,39 @@ func TestIsValidUpAndDownIssue(t *testing.T) {
 	tolerance := 1
 	want := true
 	// Valid answer would be 2 3 4 5, removing the FIRST abberation
+
+	got := IsValid(nums, tolerance)
+	if got != want {
+		t.Errorf("IsValidEnding = %t; want %t", got, want)
+	}
+}
+
+func TestIsValidBleh(t *testing.T) {
+	nums := []string{"77", "74", "71", "69", "64", "67"}
+	tolerance := 1
+	want := true
+
+	got := IsValid(nums, tolerance)
+	if got != want {
+		t.Errorf("IsValidEnding = %t; want %t", got, want)
+	}
+}
+
+func TestIsValidRm80(t *testing.T) {
+	nums := []string{"78", "80", "81", "80", "83"}
+	tolerance := 1
+	want := true
+
+	got := IsValid(nums, tolerance)
+	if got != want {
+		t.Errorf("IsValidEnding = %t; want %t", got, want)
+	}
+}
+
+func TestIsValidEdge1(t *testing.T) {
+	nums := []string{"48", "46", "47", "49", "51", "54", "56"}
+	tolerance := 1
+	want := true
 
 	got := IsValid(nums, tolerance)
 	if got != want {
