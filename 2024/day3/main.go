@@ -9,10 +9,12 @@ import (
 )
 
 func main() {
-	// Part 1
 	input_file := "./input.txt"
 	result := Part1(input_file)
-	fmt.Println("Part 1 result: ", result)
+	fmt.Println("Part 1 result:", result)
+
+	part2_result := Part2(input_file)
+	fmt.Println("Part 2 result:", part2_result)
 }
 
 func check(e error) {
@@ -38,6 +40,49 @@ func Part1(input_file string) int {
 	}
 
 	return total
+}
+
+func Part2(input_file string) int {
+	file, err := os.Open(input_file)
+	check(err)
+	scanner := bufio.NewScanner(file)
+
+	total := 0
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		match := regexp.MustCompile(`(don't\(\))|(do\(\))`)
+		indices := match.FindAllIndex([]byte(line), -1)
+
+		on := true
+		prev := 0
+
+		for _, idx := range indices {
+			a, b := idx[0], idx[1]
+
+			if on {
+				AddMulsToTotal(&total, line[prev:a])
+			}
+
+			on = (b - a) != 7
+			prev = b
+		}
+
+		if on {
+			AddMulsToTotal(&total, line[prev:])
+		}
+	}
+
+	return total
+}
+
+func AddMulsToTotal(total *int, line string) {
+	muls := FindMuls(line)
+
+	for _, mul := range muls {
+		a, b := ParseMul(mul)
+		*total += a * b
+	}
 }
 
 func FindMuls(str string) []string {
