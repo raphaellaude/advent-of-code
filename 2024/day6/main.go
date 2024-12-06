@@ -69,22 +69,18 @@ type Guard struct {
 
 func (guard *Guard) GetNextPosition(mapped_area MappedArea) (int, error) {
 	if guard.direction == up && guard.loc < mapped_area.row_length {
-		fmt.Println("EXITING UP going straight", guard.loc)
 		return -1, &ExititedMappedAreaError{}
 	}
 
 	if guard.direction == right && guard.loc%mapped_area.row_length == mapped_area.row_length-1 {
-		fmt.Println("EXITING RIGHT going straight", guard.loc)
 		return -1, &ExititedMappedAreaError{}
 	}
 
 	if guard.direction == left && guard.loc%mapped_area.row_length == 0 {
-		fmt.Println("EXITING LEFT going straight", guard.loc)
 		return -1, &ExititedMappedAreaError{}
 	}
 
 	if guard.direction == down && guard.loc >= len(mapped_area.grouds)-mapped_area.row_length {
-		fmt.Println("EXITING DOWN going straight", guard.loc)
 		return -1, &ExititedMappedAreaError{}
 	}
 
@@ -107,62 +103,34 @@ func (guard *Guard) GetNextPosition(mapped_area MappedArea) (int, error) {
 	return -1, &ExititedMappedAreaError{}
 }
 
-func (guard *Guard) TurnRight(mapped_area MappedArea) error {
-	// exit down
-	if guard.direction == right && guard.loc+mapped_area.row_length >= len(mapped_area.grouds) {
-		fmt.Println("EXITING RIGHT turning right", guard.loc)
-		return &ExititedMappedAreaError{}
-	}
-
-	// exit right
-	if guard.direction == up && guard.loc%mapped_area.row_length == mapped_area.row_length {
-		fmt.Println("EXITING TOP turning right", guard.loc)
-		return &ExititedMappedAreaError{}
-	}
-
-	// exit left
-	if guard.direction == left && guard.loc < mapped_area.row_length {
-		fmt.Println("EXITING LEFT turning right", guard.loc)
-		return &ExititedMappedAreaError{}
-	}
-
-	// exit xxxx
-	if guard.direction == down && guard.loc%mapped_area.row_length == 0 {
-		fmt.Println("EXITING BOTTOM turning right", guard.loc)
-		return &ExititedMappedAreaError{}
-	}
+func (guard *Guard) TurnRight(mapped_area MappedArea) {
+	// Don't need to check that turning right will take you out
+	// of bounds because by definition an obstruction must be on
+	// the map and the guard will stay within one column / row of
+	// the edge of the map
 
 	if guard.direction == up {
-		// fmt.Println("turning right going up at guard.loc: ", guard.loc)
 		guard.loc += 1
 		guard.direction = right
-		return nil
+		return
 	}
 
 	if guard.direction == right {
-		// fmt.Println("turning right going down at guard.loc: ", guard.loc)
 		guard.loc += mapped_area.row_length
 		guard.direction = down
-		return nil
+		return
 	}
 
 	if guard.direction == left {
-		// fmt.Println("turning right going up at guard.loc: ", guard.loc)
 		guard.loc -= mapped_area.row_length
 		guard.direction = up
-		return nil
+		return
 	}
 
 	if guard.direction == down {
-		// fmt.Println("turning right going left at guard.loc: ", guard.loc)
 		guard.loc -= 1
 		guard.direction = left
-		return nil
 	}
-
-	// This shouldn't happen
-	fmt.Println("ERROR TURNING RIGHT")
-	return &ExititedMappedAreaError{}
 }
 
 func Part1(input_file string) int {
@@ -219,14 +187,9 @@ func Part1(input_file string) int {
 		}
 
 		next_pos := mapped_area.grouds[loc : loc+1]
-		// fmt.Println("next_pos: ", next_pos)
 
 		if next_pos == "#" {
-			err := guard.TurnRight(mapped_area)
-			if err != nil {
-				fmt.Println("Guard exited mapped area at", guard.loc)
-				break
-			}
+			guard.TurnRight(mapped_area)
 		} else {
 			guard.loc = loc
 		}
