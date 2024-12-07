@@ -52,15 +52,17 @@ func (mapped_area *MappedArea) ViewVisitedLocations(locations map[int]bool) stri
 }
 
 type ExititedMappedAreaError struct {
-	direction int
+	direction Direction
 }
 
 func (e *ExititedMappedAreaError) Error() string {
 	return fmt.Sprintf("Guard exitited mapped area going %d", e.direction)
 }
 
+type Direction int
+
 const (
-	up = iota
+	up Direction = iota
 	right
 	down
 	left
@@ -68,7 +70,7 @@ const (
 
 type Guard struct {
 	loc       int
-	direction int
+	direction Direction
 }
 
 func (guard *Guard) GetNextPosition(mapped_area MappedArea) (int, error) {
@@ -183,7 +185,7 @@ func replaceAtIndex(in string, r rune, i int) string {
 
 var bleh int
 
-func CheckForLoop(starting_pos int, starting_dir int, mapped_area MappedArea) bool {
+func CheckForLoop(starting_pos int, starting_dir Direction, mapped_area MappedArea) bool {
 	guard := Guard{loc: starting_pos, direction: starting_dir}
 	visits := make(map[Guard]bool)
 
