@@ -4,14 +4,15 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"regexp"
 	"slices"
+	"strings"
 )
 
 func main() {
 	input_file := "./input.txt"
-	result := Part1(input_file)
-	fmt.Println("Part 1 result: ", result)
+	result1, result2 := Main(input_file)
+	fmt.Println("Part 1 result: ", result1)
+	fmt.Println("Part 2 result: ", result2)
 }
 
 func check(e error) {
@@ -26,7 +27,7 @@ type MappedArea struct {
 	row_length int
 }
 
-func (mapped_area *MappedArea) viewVisitedLocations(locations map[int]bool) string {
+func (mapped_area *MappedArea) ViewVisitedLocations(locations map[int]bool) string {
 	var new_grounds string
 
 	for idx, val := range mapped_area.grouds {
@@ -34,31 +35,34 @@ func (mapped_area *MappedArea) viewVisitedLocations(locations map[int]bool) stri
 			new_grounds += "\n"
 		}
 
-		if slices.Contains([]string{"^", ">", "<", "v"}, string(val)) {
+		if val == '^' {
 			new_grounds += string(val)
 			continue
 		}
 
 		if _, ok := locations[idx]; ok {
 			new_grounds += "X"
-		} else {
-			new_grounds += string(val)
+			continue
 		}
+
+		new_grounds += string(val)
 	}
 
 	return new_grounds
 }
 
-type ExititedMappedAreaError struct{}
+type ExititedMappedAreaError struct {
+	direction int
+}
 
 func (e *ExititedMappedAreaError) Error() string {
-	return "Guard exited mapped area"
+	return fmt.Sprintf("Guard exitited mapped area going %d", e.direction)
 }
 
 const (
 	up = iota
-	down
 	right
+	down
 	left
 )
 
@@ -69,19 +73,19 @@ type Guard struct {
 
 func (guard *Guard) GetNextPosition(mapped_area MappedArea) (int, error) {
 	if guard.direction == up && guard.loc < mapped_area.row_length {
-		return -1, &ExititedMappedAreaError{}
+		return -1, &ExititedMappedAreaError{direction: up}
 	}
 
 	if guard.direction == right && guard.loc%mapped_area.row_length == mapped_area.row_length-1 {
-		return -1, &ExititedMappedAreaError{}
+		return -1, &ExititedMappedAreaError{direction: right}
 	}
 
 	if guard.direction == left && guard.loc%mapped_area.row_length == 0 {
-		return -1, &ExititedMappedAreaError{}
+		return -1, &ExititedMappedAreaError{direction: left}
 	}
 
-	if guard.direction == down && guard.loc >= len(mapped_area.grouds)-mapped_area.row_length {
-		return -1, &ExititedMappedAreaError{}
+	if guard.direction == down && (guard.loc+mapped_area.row_length) >= len(mapped_area.grouds) {
+		return -1, &ExititedMappedAreaError{direction: down}
 	}
 
 	if guard.direction == up {
@@ -104,36 +108,10 @@ func (guard *Guard) GetNextPosition(mapped_area MappedArea) (int, error) {
 }
 
 func (guard *Guard) TurnRight(mapped_area MappedArea) {
-	// Don't need to check that turning right will take you out
-	// of bounds because by definition an obstruction must be on
-	// the map and the guard will stay within one column / row of
-	// the edge of the map
-
-	if guard.direction == up {
-		guard.loc += 1
-		guard.direction = right
-		return
-	}
-
-	if guard.direction == right {
-		guard.loc += mapped_area.row_length
-		guard.direction = down
-		return
-	}
-
-	if guard.direction == left {
-		guard.loc -= mapped_area.row_length
-		guard.direction = up
-		return
-	}
-
-	if guard.direction == down {
-		guard.loc -= 1
-		guard.direction = left
-	}
+	guard.direction = (guard.direction + 1) % 4
 }
 
-func Part1(input_file string) int {
+func Main(input_file string) (int, int) {
 	file, err := os.Open(input_file)
 	check(err)
 	scanner := bufio.NewScanner(file)
@@ -148,35 +126,15 @@ func Part1(input_file string) int {
 
 	mapped_area.row_length = len(mapped_area.grouds) / mapped_area.rows
 
-	var guard Guard
+	start_pos := strings.Index(mapped_area.grouds, "^")
 
-	carat_re := regexp.MustCompile(`[\^\>v\<]`)
-	idx := carat_re.FindStringIndex(mapped_area.grouds)
-
-	if idx != nil {
-		a, b := idx[0], idx[1]
-		direction := mapped_area.grouds[a:b]
-
-		if direction == "^" {
-			guard = Guard{loc: a, direction: up}
-		}
-
-		if direction == ">" {
-			guard = Guard{loc: a, direction: right}
-		}
-
-		if direction == "v" {
-			guard = Guard{loc: a, direction: down}
-		}
-
-		if direction == "<" {
-			guard = Guard{loc: a, direction: left}
-		}
-	} else {
-		return -1
+	if start_pos == -1 {
+		return -1, -1
 	}
 
-	var locations map[int]bool = make(map[int]bool)
+	guard := Guard{loc: start_pos, direction: up}
+
+	locations := make(map[int]bool)
 	locations[guard.loc] = true
 
 	for {
@@ -186,9 +144,7 @@ func Part1(input_file string) int {
 			break
 		}
 
-		next_pos := mapped_area.grouds[loc : loc+1]
-
-		if next_pos == "#" {
+		if mapped_area.grouds[loc] == '#' {
 			guard.TurnRight(mapped_area)
 		} else {
 			guard.loc = loc
@@ -197,12 +153,61 @@ func Part1(input_file string) int {
 		locations[guard.loc] = true
 	}
 
-	fo, err := os.Create("output.txt")
-	if err != nil {
-		panic(err)
+	var p2 int
+
+	for loc := range locations {
+		val := mapped_area.grouds[loc]
+		if val != '#' && val != '^' {
+			new_mapped_area := MappedArea{replaceAtIndex(mapped_area.grouds, 'O', loc), mapped_area.row_length, mapped_area.rows}
+
+			if CheckForLoop(start_pos, up, new_mapped_area) {
+				p2++
+			}
+		}
 	}
-	visited_grounds := mapped_area.viewVisitedLocations(locations)
+
+	fo, err := os.Create("output.txt")
+	check(err)
+
+	visited_grounds := mapped_area.ViewVisitedLocations(locations)
 	fo.Write([]byte(visited_grounds))
 
-	return len(locations)
+	return len(locations), p2
+}
+
+func replaceAtIndex(in string, r rune, i int) string {
+	out := []rune(in)
+	out[i] = r
+	return string(out)
+}
+
+var bleh int
+
+func CheckForLoop(starting_pos int, starting_dir int, mapped_area MappedArea) bool {
+	guard := Guard{loc: starting_pos, direction: starting_dir}
+	visits := make(map[Guard]bool)
+
+	for {
+		if mapped_area.grouds[guard.loc] == '#' {
+			fmt.Errorf("Oh no! Landed _on_ a hashbang at %d", guard.loc)
+		}
+
+		if _, ok := visits[guard]; ok {
+			return true
+		} else {
+			visits[guard] = true
+		}
+
+		loc, err := guard.GetNextPosition(mapped_area)
+
+		if err != nil {
+			return false
+		}
+
+		if slices.Contains([]byte{'#', 'O'}, mapped_area.grouds[loc]) {
+			guard.TurnRight(mapped_area)
+		} else {
+			guard.loc = loc
+		}
+	}
 }

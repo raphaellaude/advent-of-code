@@ -8,3 +8,5 @@ data_prep
 profile.json
 /scratch
 *.txt
+scratch.py
+.venv/
