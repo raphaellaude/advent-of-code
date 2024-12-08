@@ -11,8 +11,9 @@ import (
 
 func main() {
 	input_file := "./input.txt"
-	result := Part1(input_file)
-	fmt.Println("Part 1 result: ", result)
+	result1, result2 := Main(input_file)
+	fmt.Println("Part 1 result: ", result1)
+	fmt.Println("Part 2 result: ", result2)
 }
 
 func check(e error) {
@@ -21,12 +22,14 @@ func check(e error) {
 	}
 }
 
-func Part1(input_file string) int {
+func Main(input_file string) (int, int) {
 	file, err := os.Open(input_file)
 	check(err)
 	scanner := bufio.NewScanner(file)
 
-	total := 0
+	var part1 int
+	var part2 int
+
 	for scanner.Scan() {
 		line := scanner.Text()
 
@@ -45,12 +48,16 @@ func Part1(input_file string) int {
 		}
 
 		if CountValidEquation(val, nums) > 0 {
-			total += val
+			part1 += val
+			part2 += val
+		} else {
+			// if CountValidEquationWithConcat(val, nums) {
+			// 	part2 += val
+			// }
 		}
-
 	}
 
-	return total
+	return part1, part2
 }
 
 func CountValidEquation(val int, nums []int) int {
@@ -69,3 +76,23 @@ func CountValidEquation(val int, nums []int) int {
 		return CountValidEquation(val, slices.Concat([]int{a * b}, nums[2:])) + CountValidEquation(val, slices.Concat([]int{a + b}, nums[2:]))
 	}
 }
+
+func ConcatInts(a int, b int) int {
+	s := strconv.Itoa(a) + strconv.Itoa(b)
+	v, err := strconv.Atoi(s)
+	check(err)
+	return v
+}
+
+// func CountValidEquationWithConcat(val int, nums []int) bool {
+// 	if len(nums) == 2 {
+// 		a, b := nums[0], nums[1]
+// 		return ConcatInts(a, b) == val
+// 	} else {
+// 		a, b := nums[0], nums[1]
+
+// 		// either
+
+// 		return CountValidEquationWithConcat(val, slices.Concat)
+// 	}
+// }

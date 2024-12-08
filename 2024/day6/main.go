@@ -190,10 +190,6 @@ func CheckForLoop(starting_pos int, starting_dir Direction, mapped_area MappedAr
 	visits := make(map[Guard]bool)
 
 	for {
-		if mapped_area.grouds[guard.loc] == '#' {
-			fmt.Errorf("Oh no! Landed _on_ a hashbang at %d", guard.loc)
-		}
-
 		if _, ok := visits[guard]; ok {
 			return true
 		} else {
