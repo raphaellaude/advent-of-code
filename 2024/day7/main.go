@@ -51,9 +51,9 @@ func Main(input_file string) (int, int) {
 			part1 += val
 			part2 += val
 		} else {
-			// if CountValidEquationWithConcat(val, nums) {
-			// 	part2 += val
-			// }
+			if CountValidEquationWithConcat(val, nums) {
+				part2 += val
+			}
 		}
 	}
 
@@ -84,15 +84,12 @@ func ConcatInts(a int, b int) int {
 	return v
 }
 
-// func CountValidEquationWithConcat(val int, nums []int) bool {
-// 	if len(nums) == 2 {
-// 		a, b := nums[0], nums[1]
-// 		return ConcatInts(a, b) == val
-// 	} else {
-// 		a, b := nums[0], nums[1]
-
-// 		// either
-
-// 		return CountValidEquationWithConcat(val, slices.Concat)
-// 	}
-// }
+func CountValidEquationWithConcat(val int, nums []int) bool {
+	if len(nums) == 2 {
+		a, b := nums[0], nums[1]
+		return ConcatInts(a, b) == val || a*b == val || a+b == val
+	} else {
+		a, b := nums[0], nums[1]
+		return CountValidEquationWithConcat(val, slices.Concat([]int{ConcatInts(a, b)}, nums[2:])) || CountValidEquationWithConcat(val, slices.Concat([]int{a * b}, nums[2:])) || CountValidEquationWithConcat(val, slices.Concat([]int{a + b}, nums[2:]))
+	}
+}

@@ -20,6 +20,6 @@ func TestPart2(t *testing.T) {
 
 	_, got := Main(input_file)
 	if got != want {
-		t.Errorf("Part1 = %d; want %d", got, want)
+		t.Errorf("Part2 = %d; want %d", got, want)
 	}
 }
