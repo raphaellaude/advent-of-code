@@ -135,7 +135,12 @@ func (grid *Grid) PrintAntinodes(antinodes map[Cell]bool) {
 	}
 }
 
-func Abs(i int) int {
+type SignedNumber interface {
+	int | int8 | int16 | int32 | int64 |
+		float32 | float64
+}
+
+func Abs[V SignedNumber](i V) V {
 	if i < 0 {
 		return -i
 	}
@@ -147,11 +152,11 @@ type Tower struct {
 	r    rune
 }
 
-func combinations(slice []Tower, k int) [][]Tower {
-	result := [][]Tower{}
+func combinations[T any](slice []T, k int) [][]T {
+	result := [][]T{}
 
 	for i := 0; i < (1 << len(slice)); i++ {
-		subset := []Tower{}
+		subset := []T{}
 		for j := 0; j < len(slice); j++ {
 			if (i>>j)&1 == 1 {
 				subset = append(subset, slice[j])
