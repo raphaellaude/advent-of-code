@@ -7,10 +7,10 @@ import (
 )
 
 func main() {
-	// Part 1
 	input_file := "./input.txt"
-	result := Part1(input_file)
-	fmt.Println("Part 1 result: ", result)
+	result1, result2 := Main(input_file)
+	fmt.Println("Part 1 result: ", result1)
+	fmt.Println("Part 2 result: ", result2)
 }
 
 func check(e error) {
@@ -19,7 +19,7 @@ func check(e error) {
 	}
 }
 
-func Part1(input_file string) int {
+func Main(input_file string) (int, int) {
 	file, err := os.Open(input_file)
 	check(err)
 	scanner := bufio.NewScanner(file)
@@ -28,8 +28,8 @@ func Part1(input_file string) int {
 
 	grounds := make(map[Cell]int)
 	var x, y int
+	var p1, p2 int
 
-	total := 0
 	for scanner.Scan() {
 		line := scanner.Text()
 
@@ -55,10 +55,16 @@ func Part1(input_file string) int {
 	for _, s := range starts {
 		peaks_found := s.Climb(&grid, grounds, 9)
 		// fmt.Printf("%d: found %d peaks\n", idx, len(peaks_found))
-		total += len(peaks_found)
+		p1 += len(peaks_found)
 	}
 
-	return total
+	for _, s := range starts {
+		unique_trails_found := s.GetUniqueTrails(&grid, grounds, 9)
+		// fmt.Printf("%d: found %d peaks\n", idx, len(peaks_found))
+		p2 += len(unique_trails_found)
+	}
+
+	return p1, p2
 }
 
 type Grid struct {
@@ -117,4 +123,38 @@ func (cell *Cell) Climb(grid *Grid, grounds map[Cell]int, target int) map[Cell]b
 	}
 
 	return peaks_found
+}
+
+func (cell *Cell) GetUniqueTrails(grid *Grid, grounds map[Cell]int, target int) [][]Cell {
+	trails_found := [][]Cell{}
+
+	trail := []Cell{*cell}
+
+	neighbors := grid.RookNeighbors(cell)
+	c := grounds[*cell]
+
+	for _, neighbor := range neighbors {
+		t, ok := grounds[neighbor]
+
+		if !ok || t <= c {
+			continue
+		}
+
+		if t == target && c == target-1 {
+			trail = append(trail, neighbor)
+			trails_found = append(trails_found, trail)
+			continue
+		}
+
+		if t == c+1 {
+			trail = append(trail, neighbor)
+			new_trails_found := neighbor.GetUniqueTrails(grid, grounds, target)
+			for _, trail_found := range new_trails_found {
+				full_trail := append(trail, trail_found...)
+				trails_found = append(trails_found, full_trail)
+			}
+		}
+	}
+
+	return trails_found
 }

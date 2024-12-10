@@ -10,9 +10,20 @@ func TestMain(t *testing.T) {
 	want := 36
 	fmt.Println("TEST Main")
 
-	got := Part1(input_file)
+	got, _ := Main(input_file)
 	if got != want {
 		t.Errorf("Part1 = %d; want %d", got, want)
+	}
+}
+
+func TestPart2(t *testing.T) {
+	input_file := "./test.txt"
+	want := 81
+	fmt.Println("TEST Part 2")
+
+	_, got := Main(input_file)
+	if got != want {
+		t.Errorf("Part2 = %d; want %d", got, want)
 	}
 }
 
@@ -21,7 +32,7 @@ func TestMainSimple(t *testing.T) {
 	want := 1
 	fmt.Println("TEST Simple")
 
-	got := Part1(input_file)
+	got, _ := Main(input_file)
 	if got != want {
 		t.Errorf("Part1 = %d; want %d", got, want)
 	}
@@ -32,7 +43,7 @@ func TestMain_02(t *testing.T) {
 	want := 2
 	fmt.Println("TEST 2")
 
-	got := Part1(input_file)
+	got, _ := Main(input_file)
 	if got != want {
 		t.Errorf("Part1 = %d; want %d", got, want)
 	}
@@ -43,7 +54,7 @@ func TestMain_03(t *testing.T) {
 	want := 3
 	fmt.Println("TEST 3")
 
-	got := Part1(input_file)
+	got, _ := Main(input_file)
 	if got != want {
 		t.Errorf("Part1 = %d; want %d", got, want)
 	}
@@ -54,7 +65,7 @@ func TestMain_04(t *testing.T) {
 	want := 4
 	fmt.Println("TEST 4")
 
-	got := Part1(input_file)
+	got, _ := Main(input_file)
 	if got != want {
 		t.Errorf("Part1 = %d; want %d", got, want)
 	}
