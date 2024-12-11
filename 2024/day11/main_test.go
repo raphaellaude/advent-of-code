@@ -8,14 +8,12 @@ import (
 func TestExpandStones(t *testing.T) {
 	want := 22
 
-	stones := Stones{&Stone{"125", &Stone{"17", nil}}}
-
-	stones = *stones.Expand(6)
-	got := stones.collect()
+	cache := make(map[CacheVal]int)
+	got := CountStones("125", 6, &cache) + CountStones("17", 6, &cache)
 	fmt.Println(got)
 
-	if len(got) != want {
-		t.Errorf("Part1 = %d; want %d", len(got), want)
+	if got != want {
+		t.Errorf("Part1 = %d; want %d", got, want)
 	}
 }
 
